@@ -174,3 +174,4 @@ cython_debug/
 .pypirc
 
 .trackify
+token_authorization.py

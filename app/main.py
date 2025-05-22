@@ -3,6 +3,7 @@ from app.db.session import get_session
 from app.api.v1.endpoints import accounts, transactions
 from fastapi.middleware.cors import CORSMiddleware
 
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
