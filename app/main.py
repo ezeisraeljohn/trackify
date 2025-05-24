@@ -6,7 +6,7 @@ from sqlmodel import select
 from app.models import User
 
 
-app = FastAPI()
+app = FastAPI(docs_url="/api/v1/docs", redoc_url="/api/v1/redoc")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
