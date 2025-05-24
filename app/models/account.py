@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import Column
 from sqlalchemy.dialects.sqlite import JSON
 from uuid import uuid4, UUID
@@ -7,8 +7,9 @@ from datetime import datetime
 
 
 class LinkedAccount(SQLModel, table=True):
+    __tablename__ = "linked_accounts"
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    user_id: UUID = Field(foreign_key="user.id")
+    user_id: UUID = Field(foreign_key="users.id")
     provider: str = Field(default="mono", max_length=50)
     provider_account_id: str
     account_name: str
@@ -17,6 +18,8 @@ class LinkedAccount(SQLModel, table=True):
     currency: str = Field(default="NGN", max_length=3)
     balance: str
     institution: Optional[Dict[str, Any]] = Field(sa_column=Column(JSON))
+    user: Optional["User"] = Relationship(back_populates="linked_accounts")
+    transactions: list["Transaction"] = Relationship(back_populates="account")
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
 
