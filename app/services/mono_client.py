@@ -11,7 +11,6 @@ async def exchange_code_for_token(code: str) -> dict:
     """Exchange the authorization code for Users ID"""
 
     url = f"{base_URL}/accounts/auth"
-    print(code)
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
         "accept": "application/json",
@@ -19,8 +18,6 @@ async def exchange_code_for_token(code: str) -> dict:
     }
     async with httpx.AsyncClient() as client:
         response = await client.post(url, headers=headers, data={"code": code})
-        print(code)
-        print(response)
         response.raise_for_status()
         return response.json()
 
@@ -47,5 +44,6 @@ async def fetch_transactions(account_id: str) -> dict:
     }
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
+        print(response.json())
         response.raise_for_status()
         return response.json()
