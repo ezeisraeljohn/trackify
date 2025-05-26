@@ -175,3 +175,6 @@ cython_debug/
 
 .trackify
 token_authorization.py
+
+.vscode
+transaction_sample.py
