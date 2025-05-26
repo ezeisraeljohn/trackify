@@ -1,6 +1,13 @@
 from fastapi import FastAPI
 from app.db.session import get_session
-from app.api.v1 import accounts_router, users_router, auth_router, transactions_router
+from app.api.v1 import (
+    accounts_router,
+    users_router,
+    auth_router,
+    transactions_router,
+    insights_router,
+    assistant_router,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import select
 from app.models import User
@@ -18,6 +25,8 @@ app.include_router(accounts_router)
 app.include_router(users_router)
 app.include_router(auth_router)
 app.include_router(transactions_router)
+app.include_router(insights_router)
+app.include_router(assistant_router)
 
 
 @app.get("/api/v1/health")
