@@ -11,7 +11,7 @@ from app.api.deps import get_current_user
 from app.models import User
 from app.crud import get_linked_account_by_id
 from app.crud import get_transactions as transaction_crud
-from app.crud import get_transaction_by_id, get_transaction_by_transaction_id
+from app.crud import get_transaction_by_transaction_id
 
 
 router = APIRouter(prefix="/api/v1/transactions", tags=["Transactions"])
@@ -58,9 +58,12 @@ async def sync_transactions(
                 transaction.get("narration", "")
             )
             # Categorize the transaction
-            transaction["category"] = categorize_transaction(
-                transaction.get("narration", "")
-            )
+            category = categorize_transaction(transaction.get("narration", ""))
+            if not category:
+                transaction["category"] = "Others"
+            else:
+                transaction["category"] = category
+
             existing_transaction = get_transaction_by_transaction_id(
                 db=session,
                 transaction_id=transaction.get("id"),
