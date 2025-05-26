@@ -44,6 +44,5 @@ async def fetch_transactions(account_id: str) -> dict:
     }
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
-        print(response.json())
         response.raise_for_status()
         return response.json()
