@@ -43,7 +43,7 @@ async def link_account(
         # Create or update the linked account in the database
         linked_account = LinkedAccount(
             id=uuid4(),
-            user_id=user.id,  # Replace with the actual user ID from your authentication system
+            user_id=user.id,
             provider_account_id=account_id,
             provider="mono",
             account_type=account_details.get("data", {}).get("account", {}).get("type"),
