@@ -15,7 +15,11 @@ load_dotenv()
 client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
 
-def summarize_user_spending(user: User, user_message: str, session: Session) -> str:
+def summarize_user_spending(
+    user: User,
+    user_message: str,
+    session: Session,
+) -> str:
     """
     Summarize user spending based on their transactions.
 
@@ -40,6 +44,7 @@ def summarize_user_spending(user: User, user_message: str, session: Session) -> 
             f"Date: {tx.transaction_date.strftime('%Y-%m-%d')}, |"
             f"Amount: {tx.amount / 100:.2f} {tx.currency}, |"
             f"type: {tx.transaction_type}, |"
+            f"category: {tx.category}, |"
             f"Description: {tx.normalized_description} | \n"
         )
     user_name = (
