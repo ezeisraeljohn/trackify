@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException, Body, status
 from sqlmodel import Session
 from app.db.session import get_session
 from app.services.mono_client import (
@@ -11,6 +11,7 @@ from uuid import uuid4
 from datetime import datetime
 from app.api.deps import get_current_user
 from app.models import User
+from app.crud import get_linked_accounts_by_user_id
 
 
 router = APIRouter(prefix="/api/v1/accounts", tags=["Accounts"])
@@ -66,3 +67,21 @@ async def link_account(
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/", status_code=status.HTTP_200_OK)
+async def get_linked_accounts(
+    db: Session = Depends(get_session),
+    user: User = Depends(get_current_user),
+):
+    try:
+        linked_accounts = get_linked_accounts_by_user_id(db=db, user_id=user.id)
+        return {
+            "status": status.HTTP_200_OK,
+            "message": "Account linked successfully",
+            "data": linked_accounts,
+        }
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail=str(e))
