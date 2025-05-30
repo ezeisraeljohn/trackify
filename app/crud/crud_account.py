@@ -1,6 +1,6 @@
 from sqlmodel.orm.session import Session
 from app.models import LinkedAccount
-from sqlmodel import select
+from sqlmodel import select, UUID
 
 
 def get_linked_account_by_id(db: Session, account_id: int) -> LinkedAccount | None:
@@ -12,7 +12,10 @@ def get_linked_account_by_id(db: Session, account_id: int) -> LinkedAccount | No
     return result
 
 
-def get_linked_accounts_by_user_id(db: Session, user_id: int) -> list[LinkedAccount]:
+def get_linked_accounts_by_user_id(
+    db: Session,
+    user_id: UUID,
+) -> list[LinkedAccount]:
     """
     Get all linked accounts for a user by their user ID.
     """
