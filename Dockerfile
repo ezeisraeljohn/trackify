@@ -4,7 +4,10 @@ COPY . /app
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt --default-timeout=120 -i https://pypi.org/simple
+
+
 
 EXPOSE 8000
 
