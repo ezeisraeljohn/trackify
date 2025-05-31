@@ -5,10 +5,8 @@ from app.services.insights import generate_insights
 from app.models.insight import Insight
 from uuid import UUID
 from app.api.deps import get_current_user
-from typing import Dict, Any
 from app.models import User
 from ....schemas import InsightGenerateReturnList
-from pprint import pprint
 from datetime import datetime, timedelta
 
 
