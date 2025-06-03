@@ -8,6 +8,7 @@ from .crud_transaction import (
     get_transactions,
     get_transaction_by_transaction_id,
 )
+from .crud_otp import create_otp, verify_otp
 
 __all__ = [
     "insert_user",
@@ -16,4 +17,6 @@ __all__ = [
     "get_transaction_by_id",
     "get_transactions",
     "get_transaction_by_transaction_id",
+    "create_otp",
+    "verify_otp",
 ]
