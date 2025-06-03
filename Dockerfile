@@ -7,7 +7,7 @@ WORKDIR /app
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt --default-timeout=120 -i https://pypi.org/simple
 
-
+ENV ENV="production"
 
 EXPOSE 8000
 
