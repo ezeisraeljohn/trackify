@@ -1,5 +1,4 @@
-import os
-from dotenv import load_dotenv
+from app.core import settings
 from google.genai import types
 from app.models import Transaction
 from datetime import datetime, timedelta
@@ -9,10 +8,9 @@ from app.models.user import User
 from google import genai
 
 # Load environment variables from .env file
-load_dotenv()
 
 
-client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+client = genai.Client(api_key=settings.GOOGLE_API_KEY)
 
 
 def summarize_user_spending(
@@ -30,10 +28,10 @@ def summarize_user_spending(
     Returns:
         str: A summary of the user's spending.
     """
-    last_30_days = datetime.today() - timedelta(days=30)
+    last_30_days_transactions = datetime.today() - timedelta(days=30)
     txs = select(Transaction).where(
         Transaction.user_id == user.id,
-        Transaction.transaction_date >= last_30_days,
+        Transaction.transaction_date >= last_30_days_transactions,
     )
     transactions = session.exec(txs).all()
 
