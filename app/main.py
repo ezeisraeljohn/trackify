@@ -11,9 +11,14 @@ from app.api.v1 import (
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import select
 from app.models import User
+from app.core import settings
 
 
-app = FastAPI(docs_url="/api/v1/docs", redoc_url="/api/v1/redoc")
+app = FastAPI(
+    docs_url="/api/v1/docs",
+    redoc_url="/api/v1/redoc",
+    debug=settings.DEBUG,
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
