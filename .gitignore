@@ -178,3 +178,7 @@ token_authorization.py
 
 .vscode
 transaction_sample.py
+
+.env.production
+.env.development
+.env.testing
