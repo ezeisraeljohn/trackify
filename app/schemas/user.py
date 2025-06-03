@@ -3,6 +3,7 @@ from ..models import User
 from pydantic import EmailStr
 from datetime import datetime
 from uuid import UUID
+from typing import Dict
 
 
 class UserCreate(SQLModel):
@@ -15,6 +16,12 @@ class UserCreate(SQLModel):
 class UserUpdate(SQLModel):
     first_name: str
     last_name: str
+
+
+class UserCreateResponse(SQLModel):
+    status: str
+    message: str
+    data: Dict[str, str]
 
 
 class UserReturnDetails(SQLModel):
@@ -44,3 +51,14 @@ class Token(SQLModel):
     access_token: str
     token_type: str
     expires_in: int  # Default expiration time in seconds
+
+
+class VerifyEmailBody(SQLModel):
+    email: EmailStr
+    otp_code: str
+
+    class Config:
+        from_attributes = True
+        json_schema_extra = {
+            "example": {"email": "example@example.com", "otp_code": "123456"}
+        }
