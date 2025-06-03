@@ -6,9 +6,9 @@ import os
 
 # import appropriate modules
 env = os.getenv("ENV", "development")
-if env == "production":
-    load_dotenv()
-else:
+
+# Load .env file only if not in production
+if env != "production":
     load_dotenv(f".env.{env}")
 
 
