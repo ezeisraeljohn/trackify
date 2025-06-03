@@ -9,7 +9,7 @@ from typing import Annotated
 from ....models import LinkedAccount
 from uuid import uuid4
 from datetime import datetime
-from app.api.deps import get_current_user
+from app.api.deps import verified_user
 from app.models import User
 from app.crud import get_linked_accounts_by_user_id
 
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/api/v1/accounts", tags=["Accounts"])
 async def link_account(
     code: Annotated[dict, Body(description="Authorization code from Mono")],
     session: Session = Depends(get_session),
-    user: User = Depends(get_current_user),
+    user: User = Depends(verified_user),
 ):
     """
     Link a Mono account to a user.
@@ -72,7 +72,7 @@ async def link_account(
 @router.get("/", status_code=status.HTTP_200_OK)
 async def get_linked_accounts(
     db: Session = Depends(get_session),
-    user: User = Depends(get_current_user),
+    user: User = Depends(verified_user),
 ):
     try:
         linked_accounts = get_linked_accounts_by_user_id(db=db, user_id=user.id)
