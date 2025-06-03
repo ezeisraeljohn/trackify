@@ -6,7 +6,10 @@ import os
 
 # import appropriate modules
 env = os.getenv("ENV", "development")
-load_dotenv(dotenv_path=f".env.{env}")
+if env == "production":
+    load_dotenv()
+else:
+    load_dotenv(f".env.{env}")
 
 
 class BaseSettingsConfig(BaseSettings):
