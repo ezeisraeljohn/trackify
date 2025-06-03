@@ -1,16 +1,13 @@
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 from sqlmodel.orm.session import Session
 from app.models import User
 from sqlmodel import select
 from app.db.session import get_session
 from passlib.context import CryptContext
-from dotenv import load_dotenv
-import os
+from app.core import settings
 import jwt
 from datetime import datetime, timedelta, timezone
-
-load_dotenv()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -57,10 +54,10 @@ def create_access_token(data: dict, expires_delta: timedelta | None) -> str:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(
-            minutes=float(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30.00))
+            minutes=float(settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         )
-    secret_key = os.getenv("SECRET_KEY")
-    algorithm = os.getenv("ALGORITHM")
+    secret_key = settings.SECRET_KEY
+    algorithm = settings.ALGORITHM
     if not secret_key or not algorithm:
         raise RuntimeError("SECRET_KEY and ALGORITHM environment variables must be set")
     to_encode.update({"exp": expire})
@@ -80,8 +77,8 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        secret_key = os.getenv("SECRET_KEY")
-        algorithm = os.getenv("ALGORITHM")
+        secret_key = settings.SECRET_KEY
+        algorithm = settings.ALGORITHM
         if not secret_key or not algorithm:
             raise RuntimeError(
                 "SECRET_KEY and ALGORITHM environment variables must be set"
@@ -95,4 +92,19 @@ def get_current_user(
     user = get_user_by_email(db=db, email=email)
     if user is None:
         raise credentials_exception
+    return user
+
+
+def verified_user(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_session),
+) -> User:
+    """
+    Ensure the user is verified.
+    """
+    if not user.is_email_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User email is not verified",
+        )
     return user
