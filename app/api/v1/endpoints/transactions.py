@@ -7,11 +7,13 @@ from app.services.mono_client import fetch_transactions
 from app.services.normalizer import categorize_transaction, normalize_description
 from ....models import Transaction
 from datetime import datetime
-from app.api.deps import get_current_user
+from app.api.deps import verified_user
 from app.models import User
-from app.crud import get_linked_account_by_id
-from app.crud import get_transactions as transaction_crud
-from app.crud import get_transaction_by_transaction_id
+from app.crud import (
+    get_linked_account_by_id,
+    get_transactions as transaction_crud,
+    get_transaction_by_transaction_id,
+)
 
 
 router = APIRouter(prefix="/api/v1/transactions", tags=["Transactions"])
@@ -21,7 +23,7 @@ router = APIRouter(prefix="/api/v1/transactions", tags=["Transactions"])
 async def sync_transactions(
     account_id: Annotated[str, Query(description="The account id of the user")],
     session: Session = Depends(get_session),
-    user: User = Depends(get_current_user),
+    user: User = Depends(verified_user),
 ):
     """Sync transactions for a linked account.
     This endpoint fetches transactions from the Mono API and stores them in the database.
@@ -101,7 +103,7 @@ async def sync_transactions(
 async def get_transactions(
     account_id: Annotated[str, Query(description="The account id of the user")],
     session: Session = Depends(get_session),
-    user: User = Depends(get_current_user),
+    user: User = Depends(verified_user),
 ):
     """Get transactions for a linked account.
     This endpoint fetches transactions from the database for a given linked account.
