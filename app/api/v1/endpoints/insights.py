@@ -4,7 +4,7 @@ from app.db.session import get_session
 from app.services.insights import generate_insights
 from app.models.insight import Insight
 from uuid import UUID
-from app.api.deps import get_current_user
+from app.api.deps import verified_user
 from app.models import User
 from ....schemas import InsightGenerateReturnList
 from datetime import datetime, timedelta
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/api/v1/insights", tags=["Insights"])
 
 @router.post("/generate", response_model=InsightGenerateReturnList)
 async def generate_insights_endpoint(
-    user: User = Depends(get_current_user),
+    user: User = Depends(verified_user),
     session: Session = Depends(get_session),
 ) -> InsightGenerateReturnList:
     """
