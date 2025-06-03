@@ -1,4 +1,11 @@
-from .user import UserCreate, UserUpdate, UserReturnDetails, Token
+from .user import (
+    UserCreate,
+    UserUpdate,
+    UserReturnDetails,
+    Token,
+    UserCreateResponse,
+    VerifyEmailBody,
+)
 from .insight import InsightGenerateReturnList
 from .assistant import LLMResponse, LLMQuery
 
@@ -10,4 +17,5 @@ __all__ = [
     "InsightGenerateReturnList",
     "LLMResponse",
     "LLMQuery",
+    "UserCreateResponse",
 ]
