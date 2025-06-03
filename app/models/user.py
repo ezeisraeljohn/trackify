@@ -11,9 +11,11 @@ class User(SQLModel, table=True):
     first_name: str
     last_name: str
     hashed_password: str
+    is_email_verified: bool = Field(default=False, nullable=False)
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     linked_accounts: list["LinkedAccount"] = Relationship(back_populates="user")
+    otps: list["OTP"] = Relationship(back_populates="user")
 
     class Config:
         from_attributes = True
