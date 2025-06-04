@@ -7,6 +7,7 @@ from app.api.v1 import (
     transactions_router,
     insights_router,
     assistant_router,
+    webhooks_router,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import select
@@ -32,6 +33,7 @@ app.include_router(auth_router)
 app.include_router(transactions_router)
 app.include_router(insights_router)
 app.include_router(assistant_router)
+app.include_router(webhooks_router)
 
 
 @app.get("/api/v1/health")
