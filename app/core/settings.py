@@ -24,6 +24,7 @@ class BaseSettingsConfig(BaseSettings):
     DATABASE_URL: str
     MONO_BASE_URL: str
     MONO_SECRET_KEY: str
+    MONO_WEBHOOK_SECRET: str
     GOOGLE_API_KEY: str
     CELERY_BROKER_URL: str
     CELERY_RESULT_BACKEND: str
