@@ -5,7 +5,6 @@ from mono_connect import MonoConnectClient
 from app.core import settings
 
 load_dotenv()
-base_URL = settings.MONO_BASE_URL
 secret_key = settings.MONO_SECRET_KEY
 
 client = MonoConnectClient(sec_key=str(secret_key))
