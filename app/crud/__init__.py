@@ -1,4 +1,4 @@
-from .crud_user import insert_user
+from .crud_user import insert_user, get_unverified_users
 from .crud_account import (
     get_linked_account_by_id,
     get_linked_accounts_by_user_id,
@@ -19,4 +19,5 @@ __all__ = [
     "get_transaction_by_transaction_id",
     "create_otp",
     "verify_otp",
+    "get_unverified_users",
 ]
