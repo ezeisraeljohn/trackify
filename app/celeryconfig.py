@@ -13,7 +13,9 @@ worker_prefetch_multiplier = 1
 task_acks_late = True
 beat_schedule = {
     "send_reminders": {
-        "task": "app.jobs.email.send_email_reminders",
-        "schedule": crontab(minute="0", hour="9"),  # Every day at 9 AM
+        "task": "send_email_verification_reminders",
+        "args": (),
+        "kwargs": {},
+        "schedule": crontab(minute="0", hour="9", day_of_week="saturday"),
     },
 }
