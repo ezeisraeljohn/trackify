@@ -1,5 +1,8 @@
 __pycache__
 .trackify
-.env*
+.env.development
+.env.production
+.env.test*
+.env
 .vscode
 transaction_sample.py
