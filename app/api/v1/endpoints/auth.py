@@ -14,7 +14,7 @@ from app.core import settings
 from app.schemas import UserCreate, UserCreateResponse, Token, VerifyEmailBody
 from app.crud import insert_user, create_otp, verify_otp
 from app.services.email_setup import EmailService
-from app.jobs.email_jobs import send_verification_email
+from app.jobs.email_jobs.email_jobs import send_verification_email
 from typing import Annotated
 from fastapi import Body
 from app.models import User
