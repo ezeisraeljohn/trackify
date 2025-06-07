@@ -56,28 +56,32 @@ Trackify is a modern financial tracking and insights platform that helps users l
 
 ---
 
+## Environment Variables
+
+Trackify uses environment variables for configuration. Example variables are provided in `.env.example`.
+
+1. **Copy the example file to the environment you want:**
+
+   ```bash
+   cp .env.example .env.development
+   cp .env.example .env.testing
+   cp .env.example .env.production
+   ```
+
+2. **Edit the copied file** (`.env.development`, `.env.testing`, or `.env.production`) and fill in the correct values for your environment (database, API keys, email, etc).
+
+---
+
 ## Running Locally with Docker and Docker Compose
 
 Trackify is designed to run easily with Docker Compose, which will set up the API, PostgreSQL database, and Redis for Celery automatically.
 
-### 1. Clone the Repository
+### 1. Choose the Environment
 
-```bash
-git clone https://github.com/yourusername/trackify.git
-cd trackify
-```
+- By default, `compose.yml` uses `.env.development` as the `env_file` for all services.
+- **To use a different environment file** (e.g., for production or testing), edit the `env_file:` section in `compose.yml` to point to `.env.production` or `.env.testing` as needed.
 
-### 2. Configure Environment Variables
-
-Copy the development environment file and edit as needed:
-
-```bash
-cp .env.development .env
-```
-
-Edit `.env` to set your database, Mono, Google, and email credentials.
-
-### 3. Build and Start All Services
+### 2. Build and Start All Services
 
 ```bash
 docker compose up --build
@@ -92,7 +96,7 @@ This will start the following containers:
 - `trackify_celery_worker`: Celery worker for background jobs
 - `trackify_celery_beat`: Celery beat for scheduled jobs
 
-### 4. Apply Database Migrations
+### 3. Apply Database Migrations
 
 If migrations do not run automatically, you can run them manually:
 
@@ -106,12 +110,12 @@ Or, to run a command inside the app container:
 docker compose exec app alembic upgrade head
 ```
 
-### 5. Access the API
+### 4. Access the API
 
 - FastAPI docs: [http://localhost:8000/api/v1/docs](http://localhost:8000/api/v1/docs)
 - Redoc: [http://localhost:8000/api/v1/redoc](http://localhost:8000/api/v1/redoc)
 
-### 6. Running Celery Worker/Beat (if not already running)
+### 5. Running Celery Worker/Beat (if not already running)
 
 Celery worker and beat are started as services in the compose file. If you want to run them manually:
 
@@ -124,7 +128,18 @@ docker compose exec app celery -A app.celery_app.celery_app beat --loglevel=info
 
 ## Running Without Docker
 
-You can still run the application directly with Python and manage dependencies and services yourself:
+You can still run the application directly with Python and manage dependencies and services yourself.
+
+**Important:**  
+When running any command manually (e.g., `uvicorn`, `alembic`, `celery`), specify the environment by setting the `ENV` variable, for example:
+
+```bash
+ENV=production uvicorn app.main:app --host 0.0.0.0 --port 8000
+ENV=development alembic upgrade head
+ENV=testing celery -A app.celery_app.celery_app worker --loglevel=info
+```
+
+This ensures the correct environment configuration is loaded.
 
 1. **Install Python dependencies:**
 
