@@ -1,0 +1,38 @@
+# Git files
+.git
+.gitignore
+
+# Environment files (keep secrets out)
+.env
+.env.*
+
+# Python caches and build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+build/
+dist/
+
+# Logs
+*.log
+
+# Docker-related files (optional)
+docker-compose.override.yml
+*.dockerignore
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Tests (optional, if you don't want them in the image)
+tests/
+test_*.py
+
+.trackify
