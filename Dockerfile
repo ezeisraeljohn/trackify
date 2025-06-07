@@ -1,11 +1,12 @@
 FROM python:3.10-slim
 
-COPY . /app
-
 WORKDIR /app
 
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt --default-timeout=120 -i https://pypi.org/simple
+COPY requirements.txt ./
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt --default-timeout=120 -i https://pypi.org/simple
+
+COPY . .
 
 ENV ENV="production"
 
