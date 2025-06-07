@@ -17,3 +17,12 @@ def insert_user(db: Session, user: UserCreate) -> User:
     db.refresh(db_user)
     return_message = db_user
     return return_message
+
+
+def get_unverified_users(db: Session):
+    """
+    Retrieve all unverified users from the database.
+    """
+    statement = select(User).where(User.is_email_verified == False)
+    results = db.exec(statement)
+    return results.all()
