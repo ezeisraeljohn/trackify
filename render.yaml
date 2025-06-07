@@ -11,7 +11,7 @@ services:
     autoDeploy: true
     envVars:
       - key: ENV
-        value: development
+        value: production
 
   - type: worker
     name: trackify-celery-worker
