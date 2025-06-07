@@ -42,3 +42,8 @@ class EmailService:
             print(f"Email sent to {to_email}")
         except Exception as e:
             print(f"Failed to send email to {to_email}: {e}")
+
+    def send_batch_emails(self, emails: list, subject: str, body: str) -> None:
+        for email in emails:
+            self.send_email(email, subject, body)
+        print(f"Batch email sent to {len(emails)} recipients.")
