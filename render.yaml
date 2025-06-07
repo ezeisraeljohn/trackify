@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: trackify-app
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: ""
+    startCommand: gunicorn app.main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+    autoDeploy: true
+    envVars:
+      - key: ENV
+        value: development
+
+  - type: worker
+    name: trackify-celery-worker
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    env: python
+    startCommand: celery -A app.celery_app.celery_app worker --loglevel=info
+    autoDeploy: true
+    envVars:
+      - key: ENV
+        value: production
+
+  - type: worker
+    name: trackify-celery-beat
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    env: python
+    startCommand: celery -A app.celery_app.celery_app beat --loglevel=info
+    autoDeploy: true
+    envVars:
+      - key: ENV
+        value: production
