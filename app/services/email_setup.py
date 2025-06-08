@@ -12,33 +12,32 @@ class EmailService:
         self.smtp_user = settings.EMAIL_USER
         self.smtp_password = settings.EMAIL_PASSWORD
 
+    def _get_smtp_connection(self):
+        if not self.smtp_server:
+            raise ValueError("EMAIL_HOST not set")
+        if self.smtp_port == 465:
+            return smtplib.SMTP_SSL(self.smtp_server, self.smtp_port)
+        else:
+            server = smtplib.SMTP(self.smtp_server, self.smtp_port)
+            server.ehlo()
+            server.starttls()
+            return server
+
     def send_email(self, to_email: str, subject: str, body: str) -> None:
-        msg = MIMEMultipart()
         if not self.smtp_user:
             raise ValueError("EMAIL_USER not set")
+        if not self.smtp_password:
+            raise ValueError("EMAIL_PASSWORD not set")
+        msg = MIMEMultipart()
         msg["From"] = formataddr(("Trackify Support", self.smtp_user))
         msg["To"] = to_email
         msg["Subject"] = subject
         msg.attach(MIMEText(body, "html"))
 
         try:
-            if not self.smtp_server:
-                raise ValueError("EMAIL_HOST not set")
-            if self.smtp_port == 465:
-                with smtplib.SMTP_SSL(self.smtp_server, self.smtp_port) as server:
-                    if not self.smtp_password:
-                        raise ValueError("EMAIL_PASSWORD not set")
-                    server.login(self.smtp_user, self.smtp_password)
-                    server.sendmail(self.smtp_user, to_email, msg.as_string())
-            else:
-                with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
-                    server.ehlo()
-                    server.starttls()
-                    if not self.smtp_password:
-                        raise ValueError("EMAIL_PASSWORD not set")
-                    server.login(self.smtp_user, self.smtp_password)
-                    server.sendmail(self.smtp_user, to_email, msg.as_string())
-
+            with self._get_smtp_connection() as server:
+                server.login(self.smtp_user, self.smtp_password)
+                server.sendmail(self.smtp_user, to_email, msg.as_string())
             print(f"Email sent to {to_email}")
         except Exception as e:
             print(f"Failed to send email to {to_email}: {e}")
