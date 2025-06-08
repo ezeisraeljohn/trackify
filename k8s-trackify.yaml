@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trackify-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trackify-app
+  template:
+    metadata:
+      labels:
+        app: trackify-app
+    spec:
+      containers:
+        - name: trackify-app
+          image: us-central1-docker.pkg.dev/pro-icon-427919-m3/trackify/trackify:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: trackify-env
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trackify-service
+spec:
+  selector:
+    app: trackify-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celery-worker
+  template:
+    metadata:
+      labels:
+        app: celery-worker
+    spec:
+      containers:
+        - name: celery-worker
+          image: us-central1-docker.pkg.dev/pro-icon-427919-m3/trackify/trackify-worker:latest
+          command:
+            [
+              "celery",
+              "-A",
+              "app.celery_app.celery_app",
+              "worker",
+              "--loglevel=info",
+            ]
+          envFrom:
+            - secretRef:
+                name: trackify-env
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-beat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celery-beat
+  template:
+    metadata:
+      labels:
+        app: celery-beat
+    spec:
+      containers:
+        - name: celery-beat
+          image: us-central1-docker.pkg.dev/pro-icon-427919-m3/trackify/trackify-beat:latest
+          command:
+            [
+              "celery",
+              "-A",
+              "app.celery_app.celery_app",
+              "beat",
+              "--loglevel=info",
+            ]
+          envFrom:
+            - secretRef:
+                name: trackify-env
