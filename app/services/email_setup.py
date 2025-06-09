@@ -38,9 +38,9 @@ class EmailService:
             with self._get_smtp_connection() as server:
                 server.login(self.smtp_user, self.smtp_password)
                 server.sendmail(self.smtp_user, to_email, msg.as_string())
-            print(f"Email sent to {to_email}")
+            print(f"Email sent successfully")
         except Exception as e:
-            print(f"Failed to send email to {to_email}: {e}")
+            print(f"Failed to send email")
 
     def send_batch_emails(self, emails: list, subject: str, body: str) -> None:
         for email in emails:
