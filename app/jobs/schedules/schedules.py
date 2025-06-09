@@ -3,6 +3,7 @@ from app.crud import get_unverified_users
 from app.services.email_setup import EmailService
 from app.db.session import get_session
 from app.utils.email_utils import render_email_template
+from app.core import settings
 
 
 @celery_app.task(name="send_email_verification_reminders")
@@ -30,4 +31,7 @@ def send_email_verification_reminders() -> None:
         print(f"Sent email reminders to {len(emails)} unverified users.")
 
     except Exception as e:
-        print(f"Failed to send email reminders: {e}")
+        if settings.ENV != "production":
+            print(f"Error sending email reminders")
+        else:
+            print(f"Failed to send email reminders: {e}")
