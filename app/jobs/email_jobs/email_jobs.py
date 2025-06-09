@@ -1,6 +1,7 @@
 from app.celery_app import celery_app
 from app.services.email_setup import EmailService
 from app.utils.email_utils import render_email_template
+from app.core import settings
 
 
 @celery_app.task(name="send_confirmation_email")
@@ -17,4 +18,7 @@ def send_verification_email(email: str, subject: str, body: dict) -> None:
             body=html_content,
         )
     except Exception as e:
-        print(f"Failed to send verification email to {email}: {e}")
+        if settings.ENV != "production":
+            print(f"Error sending verification email to {email}: {e}")
+        else:
+            print(f"Failed to send verification email")
