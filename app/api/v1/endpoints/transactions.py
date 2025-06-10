@@ -5,15 +5,19 @@ from sqlmodel import Session
 from app.db.session import get_session
 from app.services.mono_client import fetch_transactions
 from app.services.normalizer import categorize_transaction, normalize_description
-from ....models import Transaction
 from datetime import datetime
 from app.api.deps import verified_user
-from app.models import User
+from app.models import User, Transaction
 from app.crud import (
     get_linked_account_by_id,
     get_transactions as transaction_crud,
     get_transaction_by_transaction_id,
 )
+from app.utils.logger import logger
+from app.services.security import SecurityService
+
+
+security = SecurityService()
 
 
 router = APIRouter(prefix="/api/v1/transactions", tags=["Transactions"])
@@ -47,8 +51,12 @@ async def sync_transactions(
             )
 
         provider_account_id = linked_account.provider_account_id
+
+        decrypted_provider_account_id = security.decrypt(
+            encrypted_data=provider_account_id
+        )
         # Fetch transactions from the Mono API
-        transactions_response = await fetch_transactions(provider_account_id)
+        transactions_response = await fetch_transactions(decrypted_provider_account_id)
         transactions = transactions_response.get("data", [])
 
         if not transactions:
@@ -78,6 +86,7 @@ async def sync_transactions(
                 account_id=account_id,
                 user_id=user.id,
                 transaction_id=transaction.get("id"),
+                category=transaction.get("category"),
                 transaction_type=transaction.get("type"),
                 amount=transaction.get("amount"),
                 currency=transaction.get("currency"),
@@ -88,7 +97,6 @@ async def sync_transactions(
                 ),
             )
             session.add(new_transaction)
-
         session.commit()
         return {"message": "Transactions synced successfully."}
     except Exception as e:
@@ -129,10 +137,12 @@ async def get_transactions(
             db=session,
             account_id=account_id,
         )
+        for transaction in transactions:
+            logger.info(f"Transaction: {transaction.category}")
 
         return {"message": "Transactions fetched successfully.", "data": transactions}
     except Exception as e:
-        print(e)
+        logger.error(f"Error fetching transactions: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error",
