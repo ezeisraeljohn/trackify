@@ -52,7 +52,7 @@ Trackify is a modern financial tracking and insights platform that helps users l
 ### Prerequisites
 
 - Docker & Docker Compose (recommended for local development)
-- (Optional) Python 3.10+ if you want to run without Docker
+- (Optional) Python 3.10+ if you want to run the API app manually
 
 ---
 
@@ -74,72 +74,51 @@ Trackify uses environment variables for configuration. Example variables are pro
 
 ## Running Locally with Docker and Docker Compose
 
-Trackify is designed to run easily with Docker Compose, which will set up the API, PostgreSQL database, and Redis for Celery automatically.
+Trackify uses Docker Compose to run background services (Celery worker, Celery beat, Redis), but **the FastAPI app itself should be run manually using Uvicorn**.
 
 ### 1. Choose the Environment
 
 - By default, `compose.yml` uses `.env.development` as the `env_file` for all services.
-- **To use a different environment file** (e.g., for production or testing), edit the `env_file:` section in `compose.yml` to point to `.env.production` or `.env.testing` as needed.
+- To use a different environment file (e.g., for production or testing), edit the `env_file:` section in `compose.yml` to point to `.env.production` or `.env.testing` as needed.
 
-### 2. Build and Start All Services
+### 2. Start Background Services
+
+Start Redis, Celery worker, and Celery beat using Docker Compose:
 
 ```bash
 docker compose up --build
 ```
 
-This will start the following containers:
+This will start:
 
-- `trackify_app`: FastAPI backend (with hot-reload)
-- `trackify_db`: PostgreSQL database
 - `trackify_redis`: Redis for Celery
-- `trackify_alembic`: Runs Alembic migrations on startup
 - `trackify_celery_worker`: Celery worker for background jobs
 - `trackify_celery_beat`: Celery beat for scheduled jobs
 
-### 3. Apply Database Migrations
+### 3. Run the FastAPI App
 
-If migrations do not run automatically, you can run them manually:
+In a new terminal (with your virtual environment activated and dependencies installed), run the FastAPI app manually:
 
 ```bash
-docker compose run --rm alembic
+ENV=development uvicorn app.main:app --reload
 ```
 
-Or, to run a command inside the app container:
+- Adjust `ENV=development` to match your environment (`production`, `testing`, etc).
+- The app will be available at [http://localhost:8000/api/v1/docs](http://localhost:8000/api/v1/docs).
+
+### 4. Apply Database Migrations
+
+If you need to run Alembic migrations, do so manually:
 
 ```bash
-docker compose exec app alembic upgrade head
-```
-
-### 4. Access the API
-
-- FastAPI docs: [http://localhost:8000/api/v1/docs](http://localhost:8000/api/v1/docs)
-- Redoc: [http://localhost:8000/api/v1/redoc](http://localhost:8000/api/v1/redoc)
-
-### 5. Running Celery Worker/Beat (if not already running)
-
-Celery worker and beat are started as services in the compose file. If you want to run them manually:
-
-```bash
-docker compose exec app celery -A app.celery_app.celery_app worker --loglevel=info
-docker compose exec app celery -A app.celery_app.celery_app beat --loglevel=info
+ENV=development alembic upgrade head
 ```
 
 ---
 
 ## Running Without Docker
 
-You can still run the application directly with Python and manage dependencies and services yourself.
-
-**Important:**  
-When running any command manually (e.g., `uvicorn`, `alembic`, `celery`), specify the environment by setting the `ENV` variable, for example:
-
-```bash
-ENV=production uvicorn app.main:app --host 0.0.0.0 --port 8000
-ENV=development alembic upgrade head
-ENV=testing celery -A app.celery_app.celery_app worker --loglevel=info
-```
-
-This ensures the correct environment configuration is loaded.
+You can run everything manually if you prefer:
 
 1. **Install Python dependencies:**
 
@@ -149,29 +128,31 @@ This ensures the correct environment configuration is loaded.
    pip install -r requirements.txt
    ```
 
-2. **Set up the database:**
+2. **Set up the database and environment variables as above.**
 
-   - For PostgreSQL, create a database and user, and update the `.env` file with the credentials.
-   - For SQLite, ensure the file path in the `.env` file is correct.
-
-3. **Run database migrations:**
+3. **Run Redis** (locally or via Docker):
 
    ```bash
-   alembic upgrade head
+   docker run -p 6379:6379 redis
    ```
 
-4. **Start the FastAPI application:**
+4. **Run Alembic migrations:**
 
    ```bash
-   uvicorn app.main:app --reload
+   ENV=development alembic upgrade head
    ```
 
-5. **Run the Celery worker:**
-
-   In a new terminal, activate the virtual environment and run:
+5. **Run the FastAPI app:**
 
    ```bash
-   celery -A app.celery_app.celery_app worker --loglevel=info
+   ENV=development uvicorn app.main:app --reload
+   ```
+
+6. **Run Celery worker and beat:**
+
+   ```bash
+   ENV=development celery -A app.celery_app.celery_app worker --loglevel=info
+   ENV=development celery -A app.celery_app.celery_app beat --loglevel=info
    ```
 
 ---
@@ -185,9 +166,23 @@ This ensures the correct environment configuration is loaded.
 
 ## Running Tests
 
+To run tests, you must ensure that the `app` package is discoverable by Python.  
+**If you see `ModuleNotFoundError: No module named 'app'`, it means your Python path does not include the project root.**
+
+**Recommended:**  
+Run tests from the project root directory using the following command:
+
 ```bash
-pytest tests/
+pytest
 ```
+
+Or, explicitly set the `PYTHONPATH`:
+
+```bash
+PYTHONPATH=. pytest
+```
+
+If you are using a virtual environment, make sure it is activated.
 
 ---
 
