@@ -1,18 +1,4 @@
 services:
-  app:
-    build: .
-    container_name: trackify_app
-    ports: 
-      - "8000:8000"
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0", "--port", "8000", "--reload"]
-    volumes:
-      - .:/app
-    env_file:
-      - .env.development
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    depends_on:
-      - redis
 
   redis:
     image: redis:latest
@@ -20,15 +6,6 @@ services:
     ports:
       - "6380:6379"
 
-  db:
-    image: postgres:latest
-    container_name: trackify_db
-    ports:
-      - "5432:5432"
-    env_file:
-      - .env.development
-    volumes:
-      - db_data:/var/lib/postgresql/data
 
   celery_worker:
     build: .
