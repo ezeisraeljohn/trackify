@@ -30,17 +30,6 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
-  alembic:
-    build: .
-    container_name: trackify_alembic
-    command: ["alembic", "upgrade", "head"]
-    volumes:
-      - .:/app
-    env_file:
-      - .env.development
-    depends_on:
-      - db
-
   celery_worker:
     build: .
     container_name: trackify_celery_worker
