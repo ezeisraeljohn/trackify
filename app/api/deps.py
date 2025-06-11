@@ -8,6 +8,8 @@ from passlib.context import CryptContext
 from app.core import settings
 import jwt
 from datetime import datetime, timedelta, timezone
+from app.services import email_service, security
+from app.utils.helpers import hash_email
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -31,7 +33,8 @@ def get_user_by_email(db: Session, email: str) -> User | None:
     """
     Get a user by email.
     """
-    user = db.exec(select(User).where(User.email == email)).first()
+    hashed_email = hash_email(email)
+    user = db.exec(select(User).where(User.hashed_email == hashed_email)).first()
     return user
 
 
@@ -89,7 +92,8 @@ def get_current_user(
             raise credentials_exception
     except jwt.PyJWTError:
         raise credentials_exception
-    user = get_user_by_email(db=db, email=email)
+    decrypted_email = security.decrypt(encrypted_data=email)
+    user = get_user_by_email(db=db, email=decrypted_email)
     if user is None:
         raise credentials_exception
     return user

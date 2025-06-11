@@ -10,6 +10,11 @@ from .user import (
 from .insight import InsightGenerateReturnList
 from .assistant import LLMResponse, LLMQuery
 from .account import LinkedAccountReturnDetails, LinkedAccountReturnList
+from .transaction import (
+    TransactionReturnDetails,
+    TransactionReturnList,
+    TransactionSyncResponse,
+)
 
 __all__ = [
     "UserCreate",
