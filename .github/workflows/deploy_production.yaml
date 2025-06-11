@@ -28,22 +28,23 @@ jobs:
 
       - name: Build and push app image
         run: |
-          docker buildx build --push -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:latest -f Dockerfile .
+          docker buildx build --push -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:${{ github.sha }} -f Dockerfile .
 
       - name: Build and push worker image
         run: |
-          docker buildx build --push -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-worker:latest -f Dockerfile.worker .
+          docker buildx build --push -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-worker:${{ github.sha }} -f Dockerfile.worker .
 
       - name: Build and push beat image
         run: |
-          docker buildx build --push -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-beat:latest -f Dockerfile.beat .
+          docker buildx build --push -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-beat:${{ github.sha }} -f Dockerfile.beat .
 
       - name: Install gke-gcloud-auth-plugin
         run: |
           mkdir -p "$HOME/.config/gcloud"
           gcloud components install gke-gcloud-auth-plugin --quiet
 
-      - name: Deploy to GKE
+      - name: Deploy to GKE with updated images
         run: |
-          gcloud container clusters get-credentials trackify-cluster --zone us-central1-a
-          kubectl apply -f k8s-trackify.yaml
+          kubectl set image deployment/trackify-app trackify=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:${{ github.sha }}
+          kubectl set image deployment/trackify-worker worker=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-worker:${{ github.sha }}
+          kubectl set image deployment/trackify-beat beat=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-beat:${{ github.sha }}
