@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  build-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,34 +18,42 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Set up Google Cloud SDK
+      - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Configure Docker to use Google Artifact Registry
+      - name: Configure Docker for Artifact Registry
         run: echo "Y" | gcloud auth configure-docker us-central1-docker.pkg.dev
 
-      - name: Build and push app image
+      - name: Build & Push App Image
         run: |
           docker buildx build --push -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:${{ github.sha }} -f Dockerfile .
 
-      - name: Build and push worker image
+      - name: Build & Push Worker Image
         run: |
           docker buildx build --push -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-worker:${{ github.sha }} -f Dockerfile.worker .
 
-      - name: Build and push beat image
+      - name: Build & Push Beat Image
         run: |
           docker buildx build --push -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-beat:${{ github.sha }} -f Dockerfile.beat .
 
-      - name: Install gke-gcloud-auth-plugin
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy trackify-app \
+            --image=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:${{ github.sha }} \
+            --platform=managed \
+            --region=us-central1 \
+            --allow-unauthenticated \
+            --project=${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Install GKE Auth Plugin
         run: |
           mkdir -p "$HOME/.config/gcloud"
           gcloud components install gke-gcloud-auth-plugin --quiet
 
-      - name: Deploy to GKE
+      - name: Deploy Worker & Beat to GKE
         run: |
           gcloud container clusters get-credentials trackify-cluster --zone us-central1-a --project ${{ secrets.GCP_PROJECT_ID }}
-          kubectl set image deployment/trackify-app trackify-app=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:${{ github.sha }}
           kubectl set image deployment/celery-worker celery-worker=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-worker:${{ github.sha }}
           kubectl set image deployment/celery-beat celery-beat=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-beat:${{ github.sha }}
