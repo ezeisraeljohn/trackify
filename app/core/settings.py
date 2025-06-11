@@ -30,6 +30,7 @@ class BaseSettingsConfig(BaseSettings):
     CELERY_RESULT_BACKEND: str
     CELERY_TIME_ZONE: str
     SECRET_KEY: str
+    ENCRYPTION_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     ALGORITHM: str = "HS256"
     EMAIL_HOST: str = "smtp.gmail.com"
