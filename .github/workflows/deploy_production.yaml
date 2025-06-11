@@ -43,7 +43,7 @@ jobs:
           mkdir -p "$HOME/.config/gcloud"
           gcloud components install gke-gcloud-auth-plugin --quiet
 
-      - name: Deploy to GKE with updated images
+      - name: Deploy to GKE
         run: |
           gcloud container clusters get-credentials trackify-cluster --zone us-central1-a --project ${{ secrets.GCP_PROJECT_ID }}
           kubectl set image deployment/trackify-app trackify=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:${{ github.sha }}
