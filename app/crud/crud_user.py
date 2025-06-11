@@ -1,16 +1,17 @@
 from sqlmodel import Session
 from app.models import User
-from app.schemas import UserCreate
+from app.schemas import UserInternalCreate
 from sqlmodel import select
 from app.api.deps import password_hash
+from app.services import email_service, security
+from app.utils.helpers import hash_email
 
 
-def insert_user(db: Session, user: UserCreate) -> User:
+def insert_user(db: Session, user: UserInternalCreate) -> User:
     """
     Create a new user in the database.
     """
-    hashed_password = password_hash(user.hashed_password)
-    user.hashed_password = hashed_password
+    user.hashed_password = password_hash(user.hashed_password)
     db_user = User.model_validate(user)
     db.add(db_user)
     db.commit()
