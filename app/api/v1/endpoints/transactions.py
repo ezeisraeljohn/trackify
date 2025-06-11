@@ -14,16 +14,19 @@ from app.crud import (
     get_transaction_by_transaction_id,
 )
 from app.utils.logger import logger
-from app.services.security import SecurityService
-
-
-security = SecurityService()
+from app.services import security
+from app.core import settings
+from app.schemas import (
+    TransactionReturnDetails,
+    TransactionSyncResponse,
+    TransactionReturnList,
+)
 
 
 router = APIRouter(prefix="/api/v1/transactions", tags=["Transactions"])
 
 
-@router.post("/sync")
+@router.post("/sync", response_model=TransactionSyncResponse, status_code=200)
 async def sync_transactions(
     account_id: Annotated[str, Query(description="The account id of the user")],
     session: Session = Depends(get_session),
@@ -60,7 +63,9 @@ async def sync_transactions(
         transactions = transactions_response.get("data", [])
 
         if not transactions:
-            return {"message": "No new transactions to sync."}
+            return TransactionSyncResponse(
+                success=True, status="200", message="No transactions to sync."
+            )
 
         # Store transactions in the database
         for transaction in transactions:
@@ -69,10 +74,8 @@ async def sync_transactions(
             )
             # Categorize the transaction
             category = categorize_transaction(transaction.get("narration", ""))
-            if not category:
-                transaction["category"] = "Others"
-            else:
-                transaction["category"] = category
+
+            transaction["category"] = category
 
             existing_transaction = get_transaction_by_transaction_id(
                 db=session,
@@ -98,16 +101,23 @@ async def sync_transactions(
             )
             session.add(new_transaction)
         session.commit()
-        return {"message": "Transactions synced successfully."}
+        return TransactionSyncResponse(
+            success=True,
+            status="200",
+            message="Transactions synced successfully.",
+        )
     except Exception as e:
-        print(e)
+        if settings.DEBUG:
+            logger.error(f"Error syncing transactions: {e}")
+        else:
+            logger.error("Error syncing transactions")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error",
         )
 
 
-@router.get("/", response_model=Dict[str, Any], status_code=200)
+@router.get("/", response_model=TransactionReturnList, status_code=200)
 async def get_transactions(
     account_id: Annotated[str, Query(description="The account id of the user")],
     session: Session = Depends(get_session),
@@ -137,12 +147,18 @@ async def get_transactions(
             db=session,
             account_id=account_id,
         )
-        for transaction in transactions:
-            logger.info(f"Transaction: {transaction.category}")
 
-        return {"message": "Transactions fetched successfully.", "data": transactions}
+        return TransactionReturnList(
+            success=True,
+            status="200",
+            message="Transactions retrieved successfully",
+            data=transactions,
+        )
     except Exception as e:
-        logger.error(f"Error fetching transactions: {e}")
+        if settings.DEBUG:
+            logger.error(f"Error fetching transactions: {e}")
+        else:
+            logger.error(f"Error fetching transactions")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error",
