@@ -188,87 +188,36 @@ If you are using a virtual environment, make sure it is activated.
 
 ## Project Structure
 
+A simplified view of the main codebase:
+
 ```
 trackify/
 ├── alembic/
 │   ├── env.py
 │   ├── script.py.mako
 │   └── versions/
-│       ├── 3abca017133a_initial_migration.py
-│       ├── 9f9360a328ae_initial_migration.py
-│       └── e11c008822ba_first_initialization.py
 ├── alembic.ini
 ├── app/
 │   ├── api/
 │   │   ├── deps.py
 │   │   └── v1/
 │   │       ├── endpoints/
-│   │       │   ├── accounts.py
-│   │       │   ├── assistant.py
-│   │       │   ├── auth.py
-│   │       │   ├── insights.py
-│   │       │   ├── transactions.py
-│   │       │   ├── users.py
-│   │       │   └── webhooks.py
 │   │       └── __init__.py
 │   ├── celery_app.py
 │   ├── celeryconfig.py
 │   ├── core/
-│   │   ├── __init__.py
-│   │   └── settings.py
 │   ├── crud/
-│   │   ├── crud_account.py
-│   │   ├── crud_insight.py
-│   │   ├── crud_otp.py
-│   │   ├── crud_transaction.py
-│   │   ├── crud_user.py
-│   │   └── __init__.py
 │   ├── db/
-│   │   ├── base.py
-│   │   ├── init_db.py
-│   │   ├── __init__.py
-│   │   └── session.py
 │   ├── email_templates/
-│   │   ├── email_verification_reminder.html
-│   │   └── verify_email.html
 │   ├── jobs/
-│   │   ├── email_jobs/
-│   │   │   ├── email_jobs.py
-│   │   │   └── __init__.py
-│   │   ├── schedules/
-│   │   │   ├── schedules.py
-│   │   │   └── __init__.py
-│   │   └── __init__.py
 │   ├── main.py
 │   ├── models/
-│   │   ├── account.py
-│   │   ├── base.py
-│   │   ├── insight.py
-│   │   ├── otp.py
-│   │   ├── transaction.py
-│   │   ├── user.py
-│   │   └── __init__.py
 │   ├── schemas/
-│   │   ├── assistant.py
-│   │   ├── insight.py
-│   │   ├── transaction.py
-│   │   ├── user.py
-│   │   └── __init__.py
 │   ├── services/
-│   │   ├── ai_engine.py
-│   │   ├── email_setup.py
-│   │   ├── insights.py
-│   │   ├── llm_assistant.py
-│   │   ├── mono_client.py
-│   │   └── normalizer.py
 │   ├── utils/
-│   │   ├── email_utils.py
-│   │   └── helpers.py
 │   └── __init__.py
 ├── compose.yml
-├── create_scaffold.sh
 ├── Dockerfile
-├── manifest.yml
 ├── README.md
 ├── requirements.txt
 ├── tests/
