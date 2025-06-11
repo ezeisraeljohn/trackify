@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.utils.logger import logger
 from app.db.session import get_session
 from app.api.v1 import (
     accounts_router,
@@ -13,12 +14,25 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import select
 from app.models import User
 from app.core import settings
+from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+
+    logger.info("🚀 Application startup")
+    yield
+    logger.info("🛑 Application shutdown")
 
 
 app = FastAPI(
+    lifespan=lifespan,
     docs_url="/api/v1/docs",
     redoc_url="/api/v1/redoc",
     debug=settings.DEBUG,
+    title="Trackify API",
+    description="Trackify API for managing user accounts, transactions, and insights.",
+    version="1.0.0",
 )
 app.add_middleware(
     CORSMiddleware,
@@ -39,6 +53,7 @@ app.include_router(webhooks_router)
 @app.get("/api/v1/health")
 async def health_check():
     """Health check endpoint."""
+    logger.info("Health check endpoint called")
     return {"status": "ok"}
 
 
