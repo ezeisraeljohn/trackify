@@ -23,6 +23,6 @@ class SecurityService:
         Decrypt the given encrypted data using the secret key.
         """
         if not encrypted_data:
-            logger.error("encrypted cannot be empty", exc_info=True)
+            logger.error("encrypted cannot be empty")
             raise ValueError("Encrypted data cannot be empty")
         return self.cipher.decrypt(encrypted_data.encode()).decode()
