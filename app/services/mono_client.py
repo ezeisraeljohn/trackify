@@ -19,6 +19,8 @@ async def exchange_code_for_token(code: str) -> dict:
 
 async def fetch_account_details(account_id: str) -> dict:
     """Fetch account details using the Mono API"""
+    if not account_id:
+        raise ValueError("Account ID is required to fetch details.")
     return client.get_account_details(account_id=account_id)
 
 
