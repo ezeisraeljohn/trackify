@@ -29,7 +29,7 @@ jobs:
 
       - name: Build and push app image
         run: |
-          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:latest .
+          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:latest -f Dockerfile ./
           docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:latest
 
       - name: Build and push worker image
