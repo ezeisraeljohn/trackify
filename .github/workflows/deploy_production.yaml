@@ -31,15 +31,15 @@ jobs:
 
       - name: Build and push app image
         run: |
-          docker buildx build --push -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:latest -f Dockerfile .
+          docker buildx build --push -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:latest -f Dockerfile "."
 
       - name: Build and push worker image
         run: |
-          docker buildx build --push -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-worker:latest -f Dockerfile.worker .
+          docker buildx build --push -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-worker:latest -f Dockerfile.worker "."
 
       - name: Build and push beat image
         run: |
-          docker buildx build --push -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-beat:latest -f Dockerfile.beat .
+          docker buildx build --push -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-beat:latest -f Dockerfile.beat "."
 
       - name: Deploy to GKE
         run: |
