@@ -5,9 +5,11 @@ from .user import (
     Token,
     UserCreateResponse,
     VerifyEmailBody,
+    UserInternalCreate,
 )
 from .insight import InsightGenerateReturnList
 from .assistant import LLMResponse, LLMQuery
+from .account import LinkedAccountReturnDetails, LinkedAccountReturnList
 
 __all__ = [
     "UserCreate",
@@ -18,4 +20,8 @@ __all__ = [
     "LLMResponse",
     "LLMQuery",
     "UserCreateResponse",
+    "VerifyEmailBody",
+    "LinkedAccountReturnDetails",
+    "LinkedAccountReturnList",
+    "UserInternalCreate",
 ]
