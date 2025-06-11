@@ -11,15 +11,22 @@ from ...deps import (
 from datetime import timedelta
 import os
 from app.core import settings
-from app.schemas import UserCreate, UserCreateResponse, Token, VerifyEmailBody
+from app.schemas import (
+    UserCreate,
+    UserCreateResponse,
+    Token,
+    VerifyEmailBody,
+    UserInternalCreate,
+)
 from app.crud import insert_user, create_otp, verify_otp
-from app.services.email_setup import EmailService
 from app.jobs.email_jobs.email_jobs import send_verification_email
 from typing import Annotated
 from fastapi import Body
 from app.models import User
+from app.services import security
+from app.utils.helpers import hash_email
+from app.utils.logger import logger
 
-email_service = EmailService()
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
 
@@ -40,7 +47,7 @@ def login(
             raise HTTPException(status_code=400, detail="Invalid credentials")
 
         access_token = create_access_token(
-            data={"sub": user.email},
+            data={"sub": user.encrypted_email},
             expires_delta=timedelta(
                 minutes=float(settings.ACCESS_TOKEN_EXPIRE_MINUTES)
             ),  # Token expiration time in seconds
@@ -52,12 +59,16 @@ def login(
             * 60,  # Convert to seconds
         )
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        if settings.DEBUG:
+            logger.error(f"Error during login: {e}")
+        else:
+            logger.error("Error during login")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/register", response_model=UserCreateResponse, status_code=201)
 async def create_user(
-    user: UserCreate,
+    user: Annotated[UserCreate, Body()],
     db: Session = Depends(get_session),
 ) -> UserCreateResponse | None:
     """
@@ -71,8 +82,15 @@ async def create_user(
                 status_code=400,
                 detail="Email already registered",
             )
-        data = insert_user(db=db, user=user)
-
+        user_internal = UserInternalCreate(
+            email=user.email,
+            hashed_password=user.hashed_password,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            encrypted_email=security.encrypt(data=user.email),
+            hashed_email=hash_email(user.email),  # Hash the email for storage
+        )
+        data = insert_user(db=db, user=user_internal)
         # Create OTP for the new user
         otp = create_otp(db=db, user_id=data.id)
         if not otp:
@@ -83,7 +101,7 @@ async def create_user(
         }
         send_verification_email.delay(user.email, "Email Verification", body=body)
         access_token = create_access_token(
-            data={"sub": user.email},
+            data={"sub": user_internal.encrypted_email},
             expires_delta=timedelta(
                 minutes=float(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
             ),  # Token expiration time in seconds
@@ -97,7 +115,11 @@ async def create_user(
             },
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error: " + str(e))
+        if settings.DEBUG:
+            logger.error(f"Error creating user: {e}")
+        else:
+            logger.error("Error creating user")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/verify-email", status_code=200)
@@ -126,8 +148,7 @@ def verify_email(
 
         return {"status": "success", "message": "Email verified successfully"}
     except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500, detail="Internal server error: " + str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/resend-verification-email", status_code=200)
@@ -151,12 +172,18 @@ def resend_verification_email(
             "user_name": f"{user.first_name} {user.last_name}",
             "code": otp,
         }
-        send_verification_email.delay(user.email, "Email Verification", body=body)
+        decrypted_email = security.decrypt(encrypted_data=user.encrypted_email)
+        send_verification_email.delay(
+            email=decrypted_email, subject="Email Verification", body=body
+        )
 
         return {
             "status": "success",
             "message": "Verification email resent successfully",
         }
     except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500, detail="Internal server error: " + str(e))
+        if settings.DEBUG:
+            logger.error(f"Error resending verification email: {e}")
+        else:
+            logger.error("Error resending verification email")
+        raise HTTPException(status_code=500, detail="Internal server error")
