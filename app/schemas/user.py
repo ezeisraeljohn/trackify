@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field
 from ..models import User
 from pydantic import EmailStr
 from datetime import datetime
@@ -7,10 +7,15 @@ from typing import Dict
 
 
 class UserCreate(SQLModel):
-    email: EmailStr = Field(index=True, unique=True)
+    email: EmailStr = Field(nullable=False)
     hashed_password: str
     first_name: str
     last_name: str
+
+
+class UserInternalCreate(UserCreate, SQLModel):
+    encrypted_email: str
+    hashed_email: str
 
 
 class UserUpdate(SQLModel):
