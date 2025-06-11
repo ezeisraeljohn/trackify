@@ -3,6 +3,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.utils import formataddr
 from app.core import settings
+from app.utils.logger import logger
 
 
 class EmailService:
@@ -38,11 +39,14 @@ class EmailService:
             with self._get_smtp_connection() as server:
                 server.login(self.smtp_user, self.smtp_password)
                 server.sendmail(self.smtp_user, to_email, msg.as_string())
-            print(f"Email sent successfully")
+            logger.info(f"Email sent to {to_email}")
         except Exception as e:
-            print(f"Failed to send email")
+            if settings.DEBUG:
+                logger.error(f"Failed to send email to {to_email}: {e}")
+            else:
+                logger.error("Failed to send email")
 
     def send_batch_emails(self, emails: list, subject: str, body: str) -> None:
         for email in emails:
             self.send_email(email, subject, body)
-        print(f"Batch email sent to {len(emails)} recipients.")
+        logger.info(f"Batch email sent to {len(emails)} recipients")
