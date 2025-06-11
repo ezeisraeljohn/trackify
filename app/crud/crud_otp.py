@@ -12,7 +12,6 @@ def create_otp(db: Session, user_id: UUID) -> str:
     hashed_otp = hash_otp(otp)
 
     new_otp = OTP(user_id=user_id, otp_code=hashed_otp)
-    print(new_otp)
     db.add(new_otp)
     db.commit()
     db.refresh(new_otp)
