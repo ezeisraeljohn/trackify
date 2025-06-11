@@ -32,17 +32,17 @@ jobs:
 
       - name: Build and push worker image
         run: |
-          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-worker:latest -f Dockerfile.worker .
+          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-worker:latest -f Dockerfile.worker ./
           docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-worker:latest
 
       - name: Build and push beat image
         run: |
-          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-beat:latest -f Dockerfile.beat .
+          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-beat:latest -f Dockerfile.beat ./
           docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-beat:latest
 
       - name: Build and push app image
         run: |
-          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:latest .
+          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:latest ./
           docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:latest
 
       - name: Deploy to GKE
