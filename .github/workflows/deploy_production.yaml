@@ -45,6 +45,7 @@ jobs:
 
       - name: Deploy to GKE with updated images
         run: |
+          gcloud container clusters get-credentials trackify-cluster --zone us-central1-a --project ${{ secrets.GCP_PROJECT_ID }}
           kubectl set image deployment/trackify-app trackify=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify:${{ github.sha }}
           kubectl set image deployment/trackify-worker worker=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-worker:${{ github.sha }}
           kubectl set image deployment/trackify-beat beat=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/trackify/trackify-beat:${{ github.sha }}
