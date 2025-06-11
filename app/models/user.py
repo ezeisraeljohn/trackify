@@ -7,7 +7,8 @@ from datetime import datetime
 class User(SQLModel, table=True):
     __tablename__ = "users"
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    email: EmailStr = Field(index=True, unique=True)
+    encrypted_email: str = Field(nullable=False, index=True, unique=True)
+    hashed_email: str = Field(nullable=False, index=True, unique=True)
     first_name: str
     last_name: str
     hashed_password: str
