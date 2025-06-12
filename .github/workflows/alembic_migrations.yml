@@ -33,4 +33,4 @@ jobs:
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           ENV: ${{ secrets.ENV }}
         run: |
-          alembic upgrade head
+          run: alembic -x dburl=${{ secrets.DATABASE_URL }} upgrade head
