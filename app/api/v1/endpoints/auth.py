@@ -43,6 +43,7 @@ def login(
         user = authenticate_user(
             db=db, email=form_data.username, password=form_data.password
         )
+
         if not user:
             raise HTTPException(status_code=400, detail="Invalid credentials")
 
@@ -52,12 +53,17 @@ def login(
                 minutes=float(settings.ACCESS_TOKEN_EXPIRE_MINUTES)
             ),  # Token expiration time in seconds
         )
+
         return Token(
             access_token=access_token,
             token_type="bearer",
             expires_in=int(os.getenv(str(settings.ACCESS_TOKEN_EXPIRE_MINUTES), "30"))
             * 60,  # Convert to seconds
         )
+
+    except HTTPException:
+        raise
+
     except Exception as e:
         if settings.DEBUG:
             logger.error(f"Error during login: {e}")
@@ -114,6 +120,9 @@ async def create_user(
                 "access_token": access_token,
             },
         )
+    except HTTPException:
+        raise
+
     except Exception as e:
         if settings.DEBUG:
             logger.error(f"Error creating user: {e}")
@@ -147,7 +156,15 @@ def verify_email(
         db.commit()
 
         return {"status": "success", "message": "Email verified successfully"}
+
+    except HTTPException:
+        raise
+
     except Exception as e:
+        if settings.DEBUG:
+            logger.error(f"Error verifying email: {e}")
+        else:
+            logger.error("Error verifying email")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -181,6 +198,9 @@ def resend_verification_email(
             "status": "success",
             "message": "Verification email resent successfully",
         }
+    except HTTPException:
+        raise
+
     except Exception as e:
         if settings.DEBUG:
             logger.error(f"Error resending verification email: {e}")

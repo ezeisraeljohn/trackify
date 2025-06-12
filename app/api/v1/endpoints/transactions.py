@@ -72,6 +72,7 @@ async def sync_transactions(
             transaction["narration"] = normalize_description(
                 transaction.get("narration", "")
             )
+
             # Categorize the transaction
             category = categorize_transaction(transaction.get("narration", ""))
 
@@ -81,8 +82,10 @@ async def sync_transactions(
                 db=session,
                 transaction_id=transaction.get("id"),
             )
+
             if existing_transaction:
                 continue
+
             # Create a new transaction object
             date = transaction.get("date")
             new_transaction = Transaction(
@@ -101,16 +104,19 @@ async def sync_transactions(
             )
             session.add(new_transaction)
         session.commit()
+
         return TransactionSyncResponse(
             success=True,
             status="200",
             message="Transactions synced successfully.",
         )
+    except HTTPException:
+        raise
     except Exception as e:
         if settings.DEBUG:
-            logger.error(f"Error syncing transactions: {e}")
+            logger.exception(f"Error syncing transactions: {e}")
         else:
-            logger.error("Error syncing transactions")
+            logger.exception("Error syncing transactions")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error",
@@ -154,6 +160,8 @@ async def get_transactions(
             message="Transactions retrieved successfully",
             data=transactions,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         if settings.DEBUG:
             logger.error(f"Error fetching transactions: {e}")

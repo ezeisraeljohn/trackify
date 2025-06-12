@@ -98,6 +98,8 @@ async def link_account(
             data=linked_account,
         )
         return linked_account_response
+    except HTTPException:
+        raise
     except Exception as e:
         if settings.DEBUG:
             logger.error(f"Error linking account: {e}")
@@ -133,6 +135,8 @@ async def get_linked_accounts(
         )
 
         return linked_accounts_response
+    except HTTPException:
+        raise
 
     except Exception as e:
         if settings.DEBUG:
