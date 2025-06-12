@@ -6,14 +6,13 @@ from app.services.mono_client import (
     fetch_account_details,
 )
 from typing import Annotated
-from ....models import LinkedAccount
 from uuid import uuid4
 from datetime import datetime
 from app.api.deps import verified_user
-from app.models import User
+from app.models import User, LinkedAccount
 from app.crud import get_linked_accounts_by_user_id
 from app.services.security import SecurityService
-from app.schemas import LinkedAccountReturnDetails, LinkedAccountReturnList
+from app.schemas import LinkedAccountReturnDetails, LinkedAccountReturnList, AccountCode
 from app.utils.logger import logger
 from app.utils.helpers import apply_mask
 from app.core import settings
@@ -24,9 +23,9 @@ security = SecurityService()
 router = APIRouter(prefix="/api/v1/accounts", tags=["Accounts"])
 
 
-@router.post("/link", status_code=201)
+@router.post("/link", response_model=LinkedAccountReturnDetails, status_code=201)
 async def link_account(
-    code: Annotated[dict, Body(description="Authorization code from Mono")],
+    code: Annotated[AccountCode, Body(description="Authorization code from Mono")],
     session: Session = Depends(get_session),
     user: User = Depends(verified_user),
 ):
@@ -35,7 +34,7 @@ async def link_account(
     """
     try:
         # Extract and validate the authorization code
-        auth_code = code.get("code")
+        auth_code = code.code
         if not isinstance(auth_code, str) or not auth_code:
             raise HTTPException(
                 status_code=400,
