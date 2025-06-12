@@ -27,6 +27,7 @@ class LinkedAccountReturnDetails(SQLModel):
         from_attributes = True
         json_schema_extra = {
             "example": {
+                "success": True,
                 "status": "success",
                 "message": "Linked account details retrieved successfully",
                 "data": {
@@ -37,7 +38,9 @@ class LinkedAccountReturnDetails(SQLModel):
                     "account_name": "John Doe Savings Account",
                     "balance": "1000.00",
                     "account_number": "1234567890",
-                    "institution": "Mono Bank",
+                    "institution": {
+                        
+                    }
                     "created_at": datetime.now().isoformat(),
                     "updated_at": datetime.now().isoformat(),
                 },
@@ -73,3 +76,7 @@ class LinkedAccountReturnList(SQLModel):
                 ],
             }
         }
+
+
+class AccountCode(SQLModel):
+    code: str
