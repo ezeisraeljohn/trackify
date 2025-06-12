@@ -33,5 +33,4 @@ jobs:
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           ENV: ${{ secrets.ENV }}
         run: |
-          print(f"Running Alembic migrations with DB: {settings.DATABASE_URL}")
-          ENV=production alembic upgrade head
+          alembic stamp head
