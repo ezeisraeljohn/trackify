@@ -33,4 +33,4 @@ jobs:
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           ENV: ${{ secrets.ENV }}
         run: |
-          alembic stamp head
+          alembic upgrade head
