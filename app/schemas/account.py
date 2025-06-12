@@ -39,8 +39,10 @@ class LinkedAccountReturnDetails(SQLModel):
                     "balance": "1000.00",
                     "account_number": "1234567890",
                     "institution": {
-                        
-                    }
+                        "name": "Standard Chartered",
+                        "bank_code": "068",
+                        "type": "PERSONAL_BANKING",
+                    },
                     "created_at": datetime.now().isoformat(),
                     "updated_at": datetime.now().isoformat(),
                 },
@@ -69,7 +71,11 @@ class LinkedAccountReturnList(SQLModel):
                         "account_name": "John Doe Savings Account",
                         "balance": "1000.00",
                         "account_number": "1234567890",
-                        "institution": {"name": "Mono Bank"},
+                        "institution": {
+                            "name": "Standard Chartered",
+                            "bank_code": "068",
+                            "type": "PERSONAL_BANKING",
+                        },
                         "created_at": datetime.now().isoformat(),
                         "updated_at": datetime.now().isoformat(),
                     }
