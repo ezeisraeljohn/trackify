@@ -9,7 +9,7 @@ from .user import (
 )
 from .insight import InsightGenerateReturnList
 from .assistant import LLMResponse, LLMQuery
-from .account import LinkedAccountReturnDetails, LinkedAccountReturnList
+from .account import LinkedAccountReturnDetails, LinkedAccountReturnList, AccountCode
 from .transaction import (
     TransactionReturnDetails,
     TransactionReturnList,
@@ -29,4 +29,5 @@ __all__ = [
     "LinkedAccountReturnDetails",
     "LinkedAccountReturnList",
     "UserInternalCreate",
+    "AccountCode",
 ]
