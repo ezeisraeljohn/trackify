@@ -15,7 +15,11 @@ from app.models import User, LinkedAccount, Transaction, Insight
 # access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+db_url = context.get_x_argument(as_dictionary=True).get("dburl")
+if db_url:
+    config.set_main_option("sqlalchemy.url", db_url)
+else:
+    config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
