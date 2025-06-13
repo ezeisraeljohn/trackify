@@ -67,3 +67,18 @@ class VerifyEmailBody(SQLModel):
         json_schema_extra = {
             "example": {"email": "example@example.com", "otp_code": "123456"}
         }
+
+
+class EmailVerificationResponse(SQLModel):
+    status: str
+    message: str
+
+    class Config:
+        from_attributes = True
+        json_schema_extra = {
+            "example": {
+                "status": "success",
+                "message": "Email verified successfully",
+                "data": {},
+            }
+        }
