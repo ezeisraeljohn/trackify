@@ -17,6 +17,7 @@ from app.schemas import (
     Token,
     VerifyEmailBody,
     UserInternalCreate,
+    EmailVerificationResponse,
 )
 from app.crud import insert_user, create_otp, verify_otp
 from app.jobs.email_jobs.email_jobs import send_verification_email
@@ -206,4 +207,36 @@ def resend_verification_email(
             logger.error(f"Error resending verification email: {e}")
         else:
             logger.error("Error resending verification email")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.post(
+    "/confirm-email-verification",
+    response_model=EmailVerificationResponse,
+    status_code=200,
+)
+def confirm_email_verification(
+    user: User = Depends(get_current_user),
+) -> EmailVerificationResponse:
+    """
+    Confirm email verification status of the user.
+    """
+    try:
+        if user.is_email_verified:
+            response = EmailVerificationResponse(
+                status="success", message="Email is already verified"
+            )
+            return response
+        else:
+            response = EmailVerificationResponse(
+                status="pending", message="Email verification pending"
+            )
+            return response
+    except HTTPException:
+        raise
+    except Exception as e:
+        if settings.DEBUG:
+            logger.error(f"Error confirming email verification: {e}")
+        else:
+            logger.error("Error confirming email verification")
         raise HTTPException(status_code=500, detail="Internal server error")
