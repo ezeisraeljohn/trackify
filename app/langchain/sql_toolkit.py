@@ -192,12 +192,3 @@ graph.add_edge("generate_answer", END)
 graph = graph.compile(checkpointer=MemorySaver())
 
 config = {"configurable": {"thread_id": "abc123"}}
-
-# for step in graph.stream(
-#     {
-#         "question": "What bank fetches me the most money?",
-#         "id": "a8da0f64-4470-457f-8564-7dacbee9cfb0",
-#     },
-#     config=config,
-# ):
-#     print(step)
