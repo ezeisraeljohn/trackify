@@ -18,11 +18,10 @@ class SecurityService:
             raise ValueError("Data to encrypt cannot be empty")
         return self.cipher.encrypt(str(data).encode()).decode()
 
-    def decrypt(self, encrypted_data: str) -> str:
+    def decrypt(self, encrypted_data: str | None) -> str | None:
         """
         Decrypt the given encrypted data using the secret key.
         """
         if not encrypted_data:
-            logger.error("encrypted cannot be empty")
-            raise ValueError("Encrypted data cannot be empty")
+            return
         return self.cipher.decrypt(encrypted_data.encode()).decode()
