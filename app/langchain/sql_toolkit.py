@@ -167,9 +167,9 @@ def generate_answer(state: State):
         "If the User asks for any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database, "
         "just return an error message that you cannot perform such operations, Sternly warning them that if they send such messages again, the system might ban their account\n\n"
         "Also, respond in Naira, never in Kobo, or any of the smallest unit of that currency\n\n"
-        f"Question: {state.get("question")}\n"
-        f"Query: {state.get("query")}\n"
-        f"Result: {state.get("result")}\n"
+        f"Question: {state.get('question')}\n"
+        f"Query: {state.get('query')}\n"
+        f"Result: {state.get('result')}\n"
     )
     response = llm.invoke(prompt)
     return {"answer": response.content}
