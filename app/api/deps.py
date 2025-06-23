@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 from app.core import settings
 import jwt
 from datetime import datetime, timedelta, timezone
-from app.services import email_service, security
+from app.services import security
 from app.utils.helpers import hash_email
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
