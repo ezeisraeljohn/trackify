@@ -6,8 +6,7 @@ from sqlmodel import UUID, select
 from sqlmodel.orm.session import Session
 from app.models.user import User
 from google import genai
-
-# Load environment variables from .env file
+from app.langchain.sql_toolkit import graph, config
 
 
 client = genai.Client(api_key=settings.GOOGLE_API_KEY)
@@ -19,50 +18,17 @@ def summarize_user_spending(
     session: Session,
 ) -> str:
     """
-    Summarize user spending based on their transactions.
+    Returns responses to users requets.
 
     Args:
         transactions (list[Transaction]): List of transactions for the user.
         user_id (UUID): The ID of the user.
 
     Returns:
-        str: A summary of the user's spending.
+        str: The AI Answer.
     """
-    last_30_days_transactions = datetime.today() - timedelta(days=30)
-    txs = select(Transaction).where(
-        Transaction.user_id == user.id,
-        Transaction.transaction_date >= last_30_days_transactions,
-    )
-    transactions = session.exec(txs).all()
-
-    summary = ""
-    for tx in transactions:
-        summary += (
-            f"Transaction ID: {tx.transaction_id}, |"
-            f"Date: {tx.transaction_date.strftime('%Y-%m-%d')}, |"
-            f"Amount: {tx.amount / 100:.2f} {tx.currency}, |"
-            f"type: {tx.transaction_type}, |"
-            f"category: {tx.category}, |"
-            f"Description: {tx.normalized_description} | \n"
-        )
-    user_name = (
-        f"{user.first_name} {user.last_name}" if user is not None else "Unknown User"
-    )
-    prompt = f"""
-    You are a financial assistant for a user named {user_name}.
-    User's recent transactions (last 30 days):
-    {summary}
-User's question: {user_message}
-
-Answer clearly and helpfully in 2 to 3 sentences.
-
-    """
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt,
-    )
-    return (
-        response.text.strip()
-        if response and response.text
-        else "No response generated."
-    )
+    result = graph.invoke({"question": user_message, "id": str(user.id)}, config=config)
+    if result and "answer" in result:
+        return result["answer"]
+    else:
+        raise ValueError("No answer found in the result from the AI assistant.")
