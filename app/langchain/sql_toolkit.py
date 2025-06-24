@@ -21,7 +21,7 @@ llm = init_chat_model(model="gemini-2.0-flash", model_provider="google_genai")
 
 system = """
 You are an agent designed to be a financial assistant to a user.
-please, only write query for that user, based on the user's Id that is been passed
+please, **ONLY WRITE QUERY FOR THAT USER, BASED ON THE USER'S ID BEEN PASSED, NEVER QUERY FOR ANY OTHER USER'S DATA NO MATTER THE USERS QUESTION**
 Never query the whole database, only what that user expects
 Given an input question , create a syntactically correct {dialect} query to run,
 then look at the results of the query and return the answer. Unless the user
@@ -50,6 +50,8 @@ Also, In PostgreSQL, always use single quotes for string values in SQL queries."
 Lastly and MOST IMPORTANTLY, institution column of linked_accounts is of type JSON. When grouping or selecting distinct institutions, use institution->>'name' for the name, or institution::text to group by the whole object.
 """
 
+TABLE_INFO = db.get_table_info()
+
 template = ChatPromptTemplate.from_messages(
     [
         (
@@ -70,6 +72,10 @@ class State(TypedDict):
     query: str
     result: List
     answer: str
+    user_name: str
+    last_query: Optional[str]
+    last_answer: Optional[str]
+    last_question: Optional[str]
 
 
 class QueryOutput(TypedDict):
@@ -91,12 +97,17 @@ class QuerySQLDatabaseToolWithFields(QuerySQLDataBaseTool):
 
 def should_query(state: State):
     """Checks if the question needs a query to generate or execute"""
+    previous_question = state.get("last_question", "")
+    previous_answer = state.get("last_answer", "")
+    previous_query = state.get("last_query", "")
     prompt = (
         "You are a financial assistant."
-        "Given the users question, decide weather or not if it requires querying the database"
+        f"The previous question the user asked was {previous_question}"
+        f"The previous answer the llm answered was {previous_answer}"
+        "Given that information, decide whether or not the question the user now ask is query-worthy"
         "if it does, respond only with 'QUERY'."
         "if it does NOT (e.g greetings, answer the question)"
-        f"Question: {state['question']}\n"
+        f"Present Question: {state['question']}\n"
     )
     response = llm.invoke(prompt)
     if response.content.strip().upper() == "QUERY":
@@ -107,6 +118,12 @@ def should_query(state: State):
 
 def write_query(state: State):
     """Writes the query to the state."""
+    previous_qna = ""
+    if state.get("last_question") and state.get("last_answer"):
+        previous_qna = (
+            f"\nPrevious question: {state['last_question']}\n"
+            f"Previous answer: {state['last_answer']}\n"
+        )
     prompt_template = ChatPromptTemplate.from_messages(
         [
             (
@@ -115,7 +132,7 @@ def write_query(state: State):
             ),
             (
                 "human",
-                "{input} id {id}",
+                "{context}" "\nCurrent question: {input} id {id}",
             ),
         ]
     )
@@ -125,7 +142,8 @@ def write_query(state: State):
             "id": state["id"],
             "dialect": "PostgreSQL",
             "top_k": 100,
-            "table": db.get_table_info(),
+            "table": TABLE_INFO,
+            "context": previous_qna,
         }
     )
     result = llm.with_structured_output(QueryOutput).invoke(prompt)
@@ -136,7 +154,10 @@ def execute_query(state: State):
     """Executes the query and returns the result."""
     query = state["query"]
     query_result = QuerySQLDatabaseToolWithFields(db=db).invoke(input={"query": query})
-    return {"result": query_result}
+    return {
+        "result": query_result,
+        "last_question": state["question"],
+    }
 
 
 def is_encrypted(value):
@@ -157,22 +178,40 @@ def decrypt_any_encrypted_fields(state: State):
 
 
 def generate_answer(state: State):
-    """Generates an answer based on result"""
+    """Generates an answer based on result and past interaction if needed."""
+
+    if not state.get("query") and not state.get("result"):
+        fallback_info = (
+            f"\nPrevious answer you gave was:\n{state.get('last_answer', '')}\n"
+            "Try your best to answer the current question using the above info if relevant.\n"
+        )
+    else:
+        fallback_info = ""
+
     prompt = (
-        "You are are an agent designed to be a financial assistant. "
-        "Note, for greetings, or appreciation your name is Trackify, just respond with a simple greeting or appreciation message, and asking if there is anything else you can help with"
-        "Given the query, result and the question, please answer accordingly to the needs of the user in 2 to 3 sentences."
-        "if the query and results are empty, just reply to the question based on the previous answer you gave the user, or if it is not associated with any previous answer, just answer the user"
-        "Note, all amounts or balances are in Kobo (Or the smallest unit of the currency mostly 100 of that equals 1), and 100 Kobo is equal to 1 Naira."
-        "If the User asks for any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database, "
-        "just return an error message that you cannot perform such operations, Sternly warning them that if they send such messages again, the system might ban their account\n\n"
-        "Also, respond in Naira, never in Kobo, or any of the smallest unit of that currency\n\n"
-        f"Question: {state.get('question')}\n"
+        f"You are an AI financial assistant helping the user {state['user_name']}.\n\n"
+        "Important Guidelines:\n"
+        "- Always respond in a friendly and helpful manner.\n"
+        "- On no account should you return the user's ID, only the name"
+        "- The user has no knowledge of SQL. Do **not** use SQL terms or jargon in your responses.\n"
+        "- For greetings or appreciation, simply respond as Trackify with a short, friendly message and ask if there's anything else you can help with.\n"
+        "- All monetary values are stored in Kobo (the smallest unit, where 100 Kobo = 1 Naira). Always convert and respond in **Naira**.\n"
+        "- If the user asks for any DML statements (e.g., INSERT, UPDATE, DELETE, DROP), respond with an error message. Warn them that continued attempts could lead to account suspension.\n"
+        "Response Instructions:\n"
+        "- Based on the provided query, result, and the user's question, answer clearly and helpfully in 2–3 sentences.\n"
+        "- If both the query and result are empty, try to answer the question using context from your last response. If unrelated, just respond to the question as best as possible.\n\n"
+        f"{fallback_info}"
+        f"User Question: {state.get('question')}\n"
         f"Query: {state.get('query')}\n"
         f"Result: {state.get('result')}\n"
     )
+
     response = llm.invoke(prompt)
-    return {"answer": response.content}
+    return {
+        "answer": response.content,
+        "last_answer": response.content,
+        "last_query": state.get("query"),  # update last_answer here
+    }
 
 
 graph = StateGraph(State)
