@@ -121,8 +121,8 @@ def write_query(state: State):
     previous_qna = ""
     if state.get("last_question") and state.get("last_answer"):
         previous_qna = (
-            f"\nPrevious question: {state['last_question']}\n"
-            f"Previous answer: {state['last_answer']}\n"
+            f"\nPrevious question: {state.get("last_question", "")}\n"
+            f"Previous answer: {state.get("last_answer", "")}\n"
         )
     prompt_template = ChatPromptTemplate.from_messages(
         [
@@ -147,7 +147,7 @@ def write_query(state: State):
         }
     )
     result = llm.with_structured_output(QueryOutput).invoke(prompt)
-    return {"query": result["query"]}
+    return {"query": result.get("query", "")}
 
 
 def execute_query(state: State):
@@ -156,7 +156,7 @@ def execute_query(state: State):
     query_result = QuerySQLDatabaseToolWithFields(db=db).invoke(input={"query": query})
     return {
         "result": query_result,
-        "last_question": state["question"],
+        "last_question": state.get("question", ""),
     }
 
 
@@ -174,7 +174,9 @@ def decrypt_any_encrypted_fields(state: State):
                 except Exception:
                     # Optionally log or skip if decryption fails
                     pass
-    return {"result": state["result"]}
+    return {
+        "result": state.get("result", []),
+    }
 
 
 def generate_answer(state: State):
@@ -189,7 +191,7 @@ def generate_answer(state: State):
         fallback_info = ""
 
     prompt = (
-        f"You are an AI financial assistant helping the user {state['user_name']}.\n\n"
+        f"You are an AI financial assistant helping the user {state.get('user_name')}.\n\n"
         "Important Guidelines:\n"
         "- Always respond in a friendly and helpful manner.\n"
         "- On no account should you return the user's ID, only the name"
