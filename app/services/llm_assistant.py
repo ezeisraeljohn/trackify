@@ -27,7 +27,10 @@ def summarize_user_spending(
     Returns:
         str: The AI Answer.
     """
-    result = graph.invoke({"question": user_message, "id": str(user.id)}, config=config)
+    result = graph.invoke(
+        {"question": user_message, "id": str(user.id), "user_name": user.first_name},
+        config=config,
+    )
     if result and "answer" in result:
         return result["answer"]
     else:
