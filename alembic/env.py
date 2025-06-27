@@ -9,7 +9,7 @@ from alembic import context
 from app.core import settings
 
 # This imports models
-from app.models import User, LinkedAccount, Transaction, Insight
+from app.models import User, LinkedAccount, Transaction, Insight, Category, Budget
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
