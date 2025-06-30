@@ -5,6 +5,8 @@ from app.api.v1.endpoints.transactions import router as transactions_router
 from app.api.v1.endpoints.insights import router as insights_router
 from app.api.v1.endpoints.assistant import router as assistant_router
 from app.api.v1.endpoints.webhooks import router as webhooks_router
+from app.api.v1.endpoints.budget import router as budget_router
+from app.api.v1.endpoints.category import router as category_router
 
 __all__ = [
     "accounts_router",
